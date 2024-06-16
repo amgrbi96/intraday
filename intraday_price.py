@@ -7,29 +7,35 @@ from retrying import retry
 @retry(stop_max_attempt_number=3, wait_fixed=2000)  # Retry up to 3 times with a 2-second wait between retries
 def get_intraday_data(ticker, period='30d', interval='15m'):
     try:
+        # Attempt to download data
         data = yf.download(ticker, period=period, interval=interval)
+        
+        # Debugging information
+        if data.empty:
+            st.warning(f"No data returned for {ticker} with period {period} and interval {interval}.")
+            st.write("Here's the raw data fetched:", data)
+            return None
+
+        # Ensure the datetime index is properly formatted
+        if 'Datetime' in data.columns:
+            data['Datetime'] = pd.to_datetime(data['Datetime'])
+        elif 'date' in data.columns:  # Sometimes it can be lowercase 'date'
+            data['Datetime'] = pd.to_datetime(data['date'])
+        else:
+            st.error(f"Invalid data format for {ticker}. No 'Datetime' column found.")
+            return None
+
+        data['Date'] = data['Datetime'].dt.date
+        data['Time'] = data['Datetime'].dt.time
+
+        # Pivot the table to get closing prices for each 15-minute interval
+        pivot_df = data.pivot(index='Date', columns='Time', values='Close')
+
+        return pivot_df
+
     except Exception as e:
         st.error(f"Error fetching data for {ticker}: {e}")
         return None
-
-    if data.empty:
-        st.warning(f"No data returned for {ticker}.")
-        return None
-
-    # Ensure the datetime index is properly formatted
-    if 'Datetime' in data.columns:
-        data['Datetime'] = pd.to_datetime(data['Datetime'])
-    else:
-        st.error(f"Invalid data format for {ticker}. No 'Datetime' column found.")
-        return None
-
-    data['Date'] = data['Datetime'].dt.date
-    data['Time'] = data['Datetime'].dt.time
-
-    # Pivot the table to get closing prices for each 15-minute interval
-    pivot_df = data.pivot(index='Date', columns='Time', values='Close')
-
-    return pivot_df
 
 # Streamlit app
 st.title('Intraday Price Data')
@@ -51,4 +57,5 @@ if st.button('Fetch Data'):
 
 # To run the Streamlit app, save this script as `app.py` and execute the following command in your terminal:
 # streamlit run app.py
+
 
