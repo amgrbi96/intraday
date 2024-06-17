@@ -2,6 +2,8 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import datetime
+import appdirs as ad
+ad.user_cache_dir = lambda *args: "/tmp"
 
 # Function to fetch and process intraday data
 def get_intraday_data(ticker, period='30d', interval='15m'):
