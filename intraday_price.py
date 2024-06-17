@@ -40,7 +40,7 @@ def get_intraday_data(ticker, period='30d', interval='15m'):
     return pivot_df
 
 # Streamlit app
-st.title('Intraday Price Data')
+st.title('Intraday Price Data v2')
 
 # Input fields for ticker, duration, and interval
 ticker = st.text_input('Enter the ticker symbol (e.g., AAPL, MSFT, GOOGL):', 'AAPL')
