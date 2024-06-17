@@ -1,9 +1,11 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import datetime
 
 # Function to fetch and process intraday data
 def get_intraday_data(ticker, period='30d', interval='15m'):
+    st.write(f"Fetching data for {ticker}, Period: {period}, Interval: {interval}")
     # Download historical data
     try:
         data = yf.download(ticker, period=period, interval=interval)
@@ -13,6 +15,7 @@ def get_intraday_data(ticker, period='30d', interval='15m'):
 
     # Ensure we have data
     if data.empty:
+        st.error(f"No data found for {ticker}")
         return None
 
     # Reset index to move the datetime index into a column
@@ -56,5 +59,5 @@ if st.button('Fetch Data'):
     else:
         st.write(f'No data available for {ticker}')
 
-# To run the Streamlit app, save this script as `app.py` and execute the following command in your terminal:
-# streamlit run app.py
+    # Log the data fetched
+    st.write("Data Fetch Attempt Completed")
